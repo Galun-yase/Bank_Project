@@ -1,5 +1,7 @@
 package com.chengzi.banking;
 
+import com.chengzi.banking.domain.OverdraftException;
+
 public class Account {
 
     protected double balance;
@@ -15,12 +17,12 @@ public class Account {
         this.balance=this.balance+add_balance;
         return true;
     }
-    public boolean withdraw(double dec_balance){
+    public void withdraw(double dec_balance) throws OverdraftException {
         if(dec_balance<=this.balance){
             this.balance=this.balance-dec_balance;
-            return true;
         }else{
-            return false;
+            double deficit=dec_balance-this.balance;
+            throw new OverdraftException("资金不足",deficit);
         }
 
     }

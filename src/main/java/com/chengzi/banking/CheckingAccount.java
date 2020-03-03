@@ -1,29 +1,36 @@
 package com.chengzi.banking;
 
+import com.chengzi.banking.domain.OverdraftException;
+
 public class CheckingAccount extends Account {
-    private double overdraftProtection;
+    //private double overdraftProtection;
+    private SavingAccount protectedBy=null;
 
     public CheckingAccount(double init_balance){
         super(init_balance);
     }
-    public CheckingAccount(double init_balance,double init_protect){
+    public CheckingAccount(double init_balance,SavingAccount init_protect){
         super(init_balance);
-        this.overdraftProtection=init_protect;
+        this.protectedBy=init_protect;
     }
 
     @Override
-    public boolean withdraw(double dec_balance) {
-        boolean issuccess=false;
+    public void withdraw(double dec_balance) throws OverdraftException {
         if (dec_balance <= super.balance) {
             super.balance -= dec_balance;
-            issuccess=true;
-        } else if (super.balance - dec_balance + this.overdraftProtection >= 0) {
-            this.overdraftProtection = super.balance + this.overdraftProtection - dec_balance;
-            super.balance = 0;
-            issuccess=true;
-        } else if (super.balance - dec_balance + this.overdraftProtection < 0) {
-            issuccess=false;
+        }else{
+            if(this.protectedBy!=null){
+                if(protectedBy.balance>=dec_balance-super.balance){
+                    protectedBy.balance-=(dec_balance-super.balance);
+                    super.balance=0;
+                }else{
+                    throw new OverdraftException("Insufficient funds for overdraft protection",dec_balance-super.balance-protectedBy.balance);
+                }
+            }else{
+                throw new OverdraftException("no overdraft protection",dec_balance-super.balance);
+            }
+
         }
-        return issuccess;
+
     }
 }
